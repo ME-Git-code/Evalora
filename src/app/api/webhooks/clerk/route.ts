@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       data: {
         user: { connect: { clerkId: id! } },
         plan: "FREE",
-        freeAiCredits: 1
+        freeAiCredits: 2
       }
     });
   }
