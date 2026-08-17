@@ -59,7 +59,7 @@ export default async function DashboardLayout({
             <div className="flex items-center gap-2 text-amber-500 font-bold text-sm bg-amber-50 px-3 py-1.5 rounded-full">
               🪙 {user?.coins || 0} Coin
             </div>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
           </div>
         </header>
 

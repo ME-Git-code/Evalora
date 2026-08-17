@@ -1,11 +1,11 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
-  
+
   if (!userId) return null;
 
   const user = await prisma.user.findUnique({
@@ -50,9 +50,9 @@ export default async function DashboardPage() {
             <h2 className="text-2xl font-bold">To'liq Mock Imtihon</h2>
             <p className="text-blue-100 mt-2 max-w-xs">4 ta modulni o'z ichiga olgan CEFR sinov imtihonini boshlang.</p>
           </div>
-          <Button asChild className="bg-white text-blue-600 hover:bg-blue-50 mt-4 font-bold rounded-xl px-6">
-            <Link href="/test/1">Mock Testni Boshlash -&gt;</Link>
-          </Button>
+          <Link href="/test/1" className={buttonVariants({ variant: "default", className: "w-max bg-white text-blue-600 hover:bg-blue-50 mt-4 font-bold rounded-xl px-6" })}>
+            Mock Testni Boshlash
+          </Link>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between h-48">
           <div>
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
             <span className="text-violet-600">✨</span> AI Maslahatchi
           </h2>
         </div>
-        
+
         {plan === "FREE" ? (
           <>
             <div className="bg-violet-50 rounded-xl p-5 border border-violet-100 relative z-10 blur-[2px] opacity-70 select-none">
