@@ -3,6 +3,7 @@ import { SignUp } from "@clerk/nextjs";
 export default function SignUpPage() {
   return (
     <SignUp 
+      fallbackRedirectUrl="/dashboard"
       appearance={{
         elements: {
           rootBox: "w-full flex justify-center",
