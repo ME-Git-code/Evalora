@@ -21,7 +21,7 @@ export async function completeOnboarding(data: {
       where: { clerkId: userId },
       data: {
         fullName: data.fullName,
-        phoneNumber: data.phoneNumber || null,
+        phone: data.phoneNumber || null,
         hasCompletedOnboarding: true,
         profile: {
           update: {

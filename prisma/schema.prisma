@@ -7,9 +7,291 @@ datasource db {
   provider = "postgresql"
 }
 
-// 1. ENUMLAR (QAT'IY TIPLASH)
+model User {
+  id                     String            @id @default(cuid())
+  clerkId                String            @unique
+  customId               String            @unique
+  email                  String            @unique
+  fullName               String?
+  phone                  String?
+  avatarUrl              String?
+  role                   Role              @default(USER)
+  coins                  Int               @default(0)
+  streakCount            Int               @default(0)
+  lastActiveDate         DateTime?
+  hasCompletedOnboarding Boolean           @default(false)
+  referralCode           String?           @unique
+  referredById           String?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  coinTransactions       CoinTransaction[]
+  MockSubmission         MockSubmission[]
+  Notification           Notification[]
+  paymentRequests        PaymentRequest[]
+  profile                Profile?
+  submissions            Submission[]
+  subscription           Subscription?
+  SupportMessage         SupportMessage[]
+  Transaction            Transaction[]
+  User                   User?             @relation("UserToUser", fields: [referredById], references: [id])
+  other_User             User[]            @relation("UserToUser")
+
+  @@index([customId])
+  @@index([clerkId])
+  @@index([email])
+}
+
+model Profile {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  targetLevel    CefrLevel @default(B2)
+  currentLevel   CefrLevel @default(A1)
+  readingScore   Float     @default(0)
+  listeningScore Float     @default(0)
+  writingScore   Float     @default(0)
+  speakingScore  Float     @default(0)
+  overallScore   Float     @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  plan          PlanType  @default(FREE)
+  freeAiCredits Int       @default(2)
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  isActive      Boolean   @default(true)
+  updatedAt     DateTime
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PaymentRequest {
+  id              String        @id @default(cuid())
+  userId          String
+  plan            PlanType?
+  coinAmount      Int?
+  priceUzbekSum   Int
+  receiptImageUrl String?
+  status          PaymentStatus @default(PENDING)
+  adminNote       String?
+  processedById   String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Test {
+  id               String       @id @default(cuid())
+  title            String
+  description      String?
+  skill            SkillType
+  level            CefrLevel
+  timeLimitMinutes Int          @default(30)
+  audioUrl         String?
+  readingPassage   String?
+  writingPrompt    String?
+  speakingPrompt   String?
+  isPublished      Boolean      @default(true)
+  isPremium        Boolean      @default(false)
+  mockExamId       String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime
+  questions        Question[]
+  submissions      Submission[]
+  MockExam         MockExam?    @relation(fields: [mockExamId], references: [id])
+
+  @@index([isPublished])
+  @@index([skill, level])
+}
+
+model Question {
+  id              String   @id @default(cuid())
+  testId          String
+  orderIndex      Int      @default(1)
+  questionText    String
+  options         Json?
+  correctOption   String
+  explanation     String?
+  difficultyLogit Float    @default(0.0)
+  createdAt       DateTime @default(now())
+  answers         Answer[]
+  test            Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId, orderIndex])
+}
+
+model Submission {
+  id               String              @id @default(cuid())
+  userId           String
+  testId           String
+  mode             ExamMode            @default(STANDARD)
+  status           SubmissionStatus    @default(COMPLETED)
+  rawScore         Float               @default(0)
+  scaledScore      Float               @default(0)
+  achievedLevel    CefrLevel           @default(A1)
+  timeSpentSeconds Int                 @default(0)
+  startedAt        DateTime            @default(now())
+  completedAt      DateTime            @default(now())
+  expiresAt        DateTime?
+  essayText        String?
+  audioRecordUrl   String?
+  hasEarnedXp      Boolean             @default(false)
+  mockSubmissionId String?
+  diagnosticReport AiDiagnosticReport?
+  answers          Answer[]
+  MockSubmission   MockSubmission?     @relation(fields: [mockSubmissionId], references: [id])
+  test             Test                @relation(fields: [testId], references: [id], onDelete: Cascade)
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([testId])
+  @@index([completedAt])
+}
+
+model Answer {
+  id               String     @id @default(cuid())
+  submissionId     String
+  questionId       String
+  selectedOption   String
+  isCorrect        Boolean    @default(false)
+  timeSpentSeconds Int?       @default(0)
+  question         Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  submission       Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+model AiDiagnosticReport {
+  id               String     @id @default(cuid())
+  submissionId     String     @unique
+  summary          String
+  scoresBreakdown  Json
+  corrections      Json
+  vocabularyTips   Json
+  grammarAnalysis  Json?
+  acousticMetrics  Json?
+  recommendations  Json
+  isManualOverride Boolean    @default(false)
+  teacherNotes     String?
+  createdAt        DateTime   @default(now())
+  submission       Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model CoinTransaction {
+  id          String          @id @default(cuid())
+  userId      String
+  amount      Int
+  type        TransactionType
+  description String
+  createdAt   DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+}
+
+model MockExam {
+  id             String           @id
+  title          String
+  level          CefrLevel
+  description    String?
+  isPublished    Boolean          @default(true)
+  isPremium      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  MockSubmission MockSubmission[]
+  Test           Test[]
+
+  @@index([isPublished])
+  @@index([level])
+}
+
+model MockSubmission {
+  id             String       @id
+  userId         String
+  mockExamId     String
+  overallScore   Float        @default(0)
+  overallLevel   CefrLevel    @default(A1)
+  readingScore   Float        @default(0)
+  listeningScore Float        @default(0)
+  writingScore   Float        @default(0)
+  speakingScore  Float        @default(0)
+  isCompleted    Boolean      @default(false)
+  completedAt    DateTime     @default(now())
+  MockExam       MockExam     @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  User           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Submission     Submission[]
+
+  @@index([mockExamId])
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model PromoCode {
+  id              String    @id
+  code            String    @unique
+  discountPercent Int       @default(0)
+  coinBonus       Int       @default(0)
+  maxUses         Int       @default(100)
+  usedCount       Int       @default(0)
+  expiresAt       DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+}
+
+model SupportMessage {
+  id            String    @id
+  userId        String
+  message       String
+  attachmentUrl String?
+  isRead        Boolean   @default(false)
+  adminReply    String?
+  repliedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Transaction {
+  id         String          @id
+  userId     String
+  amount     Int
+  currency   String          @default("UZS")
+  type       TransactionType
+  method     PaymentMethod
+  externalId String?         @unique
+  status     PaymentStatus   @default(APPROVED)
+  metadata   Json?
+  createdAt  DateTime        @default(now())
+  User       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([userId])
+}
+
 enum Role {
   USER
+  TEACHER
+  EXAMINER
   ADMIN
 }
 
@@ -48,163 +330,29 @@ enum ExamMode {
   REAL_EXAM
 }
 
-// 2. FOYDALANUVCHI VA PROFIL
-model User {
-  id               String            @id @default(cuid())
-  clerkId          String            @unique
-  customId         String            @unique // EV-XXXXXX (Unikal 6 xonali)
-  email            String            @unique
-  fullName         String?
-  avatarUrl        String?
-  phoneNumber      String?
-  role             Role              @default(USER)
-  coins            Int               @default(0) // Ro'yxatdan o'tganda 0 coin (faollik orqali yig'iladi)
-  streakCount      Int               @default(0)
-  hasCompletedOnboarding Boolean     @default(false)
-  lastActiveDate   DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-
-  profile          Profile?
-  subscription     Subscription?
-  submissions      Submission[]
-  coinTransactions CoinTransaction[]
-  paymentRequests  PaymentRequest[]
-
-  @@index([customId])
-  @@index([clerkId])
+enum PaymentMethod {
+  MANUAL_TELEGRAM
+  PAYME
+  CLICK
+  STRIPE
 }
 
-model Profile {
-  id               String            @id @default(cuid())
-  userId           String            @unique
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  targetLevel      CefrLevel         @default(B2)
-  currentLevel     CefrLevel         @default(A1)
-  readingScore     Float             @default(0)
-  listeningScore   Float             @default(0)
-  writingScore     Float             @default(0)
-  speakingScore    Float             @default(0)
-  overallScore     Float             @default(0)
+enum SubmissionStatus {
+  IN_PROGRESS
+  COMPLETED
+  TIMED_OUT
+  ABORTED_VIOLATION
 }
 
-// 3. OBUNA VA TELEGRAM TO'LOV SO'ROVLARI (ADMIN TIZIMI UCHUN)
-model Subscription {
-  id               String            @id @default(cuid())
-  userId           String            @unique
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan             PlanType          @default(FREE)
-  freeAiCredits    Int               @default(1) // Oylik qolgan AI limitlari
-  startDate        DateTime          @default(now())
-  endDate          DateTime?
-  isActive         Boolean           @default(true)
-}
-
-model PaymentRequest {
-  id               String            @id @default(cuid())
-  userId           String
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan             PlanType?
-  coinAmount       Int?
-  priceUzbekSum    Int
-  status           PaymentStatus     @default(PENDING)
-  adminNote        String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-
-  @@index([userId])
-  @@index([status])
-}
-
-// 4. TESTLAR VA SAVOLLAR BAZASI
-model Test {
-  id               String            @id @default(cuid())
-  title            String
-  description      String?
-  skill            SkillType
-  level            CefrLevel
-  timeLimitMinutes Int               @default(30)
-  audioUrl         String?           // Listening uchun Cloudflare R2 MP3
-  readingPassage   String?           @db.Text // Reading uchun matn
-  writingPrompt    String?           @db.Text // Writing mavzusi
-  speakingPrompt   String?           @db.Text // Speaking savoli
-  isPublished      Boolean           @default(true)
-  createdAt        DateTime          @default(now())
-
-  questions        Question[]
-  submissions      Submission[]
-}
-
-model Question {
-  id               String            @id @default(cuid())
-  testId           String
-  test             Test              @relation(fields: [testId], references: [id], onDelete: Cascade)
-  orderIndex       Int               @default(1)
-  questionText     String            @db.Text
-  options          Json              // ["Variant A", "Variant B", "Variant C", "Variant D"]
-  correctOption    String            // "A" / "B" / "C" / "D" (Frontendga chiqmaydi)
-  explanation      String?           @db.Text // To'g'ri javob konteksti
-  difficultyLogit  Float             @default(0.0) // Rasch modeli parametri (beta_i)
-
-  answers          Answer[]
-}
-
-// 5. TOPSHIRILGAN JAVOBLAR VA NATIJALAR
-model Submission {
-  id               String            @id @default(cuid())
-  userId           String
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  testId           String
-  test             Test              @relation(fields: [testId], references: [id], onDelete: Cascade)
-  mode             ExamMode          @default(STANDARD)
-  rawScore         Float             @default(0) // Rasch / Mezon balli
-  scaledScore      Float             @default(0) // 0 - 100 ball
-  achievedLevel    CefrLevel         @default(A1)
-  timeSpentSeconds Int               @default(0)
-  completedAt      DateTime          @default(now())
-
-  essayText        String?           @db.Text // Writing insho matni
-  audioRecordUrl   String?           // Speaking audio yozuvi (R2)
-
-  answers          Answer[]
-  diagnosticReport AiDiagnosticReport?
-
-  @@index([userId])
-  @@index([testId])
-}
-
-model Answer {
-  id               String            @id @default(cuid())
-  submissionId     String
-  submission       Submission        @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  questionId       String
-  question         Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  selectedOption   String            // O'quvchi tanlagan variant
-  isCorrect        Boolean           @default(false)
-}
-
-// 6. AI DIAGNOSTIKA VA TAHLIL HISOBOTI
-model AiDiagnosticReport {
-  id               String            @id @default(cuid())
-  submissionId     String            @unique
-  submission       Submission        @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  summary          String            @db.Text
-  scoresBreakdown  Json              // Mezonlar bo'yicha ballar {task: 22, coherence: 20, ...}
-  corrections      Json              // [{original: "...", corrected: "...", reason: "..."}]
-  vocabularyTips   Json              // [{used: "...", alternatives: [...]}]
-  grammarAnalysis  Json?             // Grammatik qoidalar tahlili
-  acousticMetrics  Json?             // Speaking: {wpm: 110, pauses: 3, fluency: 85}
-  createdAt        DateTime          @default(now())
-}
-
-// 7. COIN TRANZAKSIYALARI TARIXI
-model CoinTransaction {
-  id               String            @id @default(cuid())
-  userId           String
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount           Int               // +50 (bonus/xarid) yoki -15 (test/AI)
-  description      String            // "B2 Mock Testi yechildi", "Bonus tanga"
-  createdAt        DateTime          @default(now())
-
-  @@index([userId])
+enum TransactionType {
+  SUBSCRIPTION_PURCHASE
+  COIN_PURCHASE
+  COIN_SPEND_AI
+  COIN_SPEND_MOCK
+  COIN_SPEND_EXPLANATION
+  COIN_EARN_TEST
+  COIN_EARN_PERFECT
+  COIN_EARN_STREAK
+  COIN_EARN_REFERRAL
+  ADMIN_ADJUSTMENT
 }
