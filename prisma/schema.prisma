@@ -56,9 +56,11 @@ model User {
   email            String            @unique
   fullName         String?
   avatarUrl        String?
+  phoneNumber      String?
   role             Role              @default(USER)
   coins            Int               @default(0) // Ro'yxatdan o'tganda 0 coin (faollik orqali yig'iladi)
   streakCount      Int               @default(0)
+  hasCompletedOnboarding Boolean     @default(false)
   lastActiveDate   DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt

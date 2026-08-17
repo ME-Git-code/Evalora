@@ -2,6 +2,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { OnboardingModal } from "@/components/dashboard/OnboardingModal";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -23,7 +24,11 @@ export default async function DashboardPage() {
   const firstName = user.fullName?.split(" ")[0] || "Foydalanuvchi";
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <>
+      {!user.hasCompletedOnboarding && (
+        <OnboardingModal initialName={user.fullName || ""} />
+      )}
+      <div className="space-y-8 max-w-5xl mx-auto">
       {/* Welcome Banner */}
       <section className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
@@ -106,5 +111,6 @@ export default async function DashboardPage() {
         )}
       </section>
     </div>
+    </>
   );
 }
