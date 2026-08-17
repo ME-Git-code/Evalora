@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. ENUMLAR (QAT'IY TIPLASH)
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SkillType {
+  READING
+  LISTENING
+  WRITING
+  SPEAKING
+}
+
+enum CefrLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum PlanType {
+  FREE
+  START
+  PRO
+  PRO_PLUS
+  ULTRA
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ExamMode {
+  STANDARD
+  REAL_EXAM
+}
+
+// 2. FOYDALANUVCHI VA PROFIL
+model User {
+  id               String            @id @default(cuid())
+  clerkId          String            @unique
+  customId         String            @unique // EV-XXXXXX (Unikal 6 xonali)
+  email            String            @unique
+  fullName         String?
+  avatarUrl        String?
+  role             Role              @default(USER)
+  coins            Int               @default(0) // Ro'yxatdan o'tganda 0 coin (faollik orqali yig'iladi)
+  streakCount      Int               @default(0)
+  lastActiveDate   DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  profile          Profile?
+  subscription     Subscription?
+  submissions      Submission[]
+  coinTransactions CoinTransaction[]
+  paymentRequests  PaymentRequest[]
+
+  @@index([customId])
+  @@index([clerkId])
+}
+
+model Profile {
+  id               String            @id @default(cuid())
+  userId           String            @unique
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetLevel      CefrLevel         @default(B2)
+  currentLevel     CefrLevel         @default(A1)
+  readingScore     Float             @default(0)
+  listeningScore   Float             @default(0)
+  writingScore     Float             @default(0)
+  speakingScore    Float             @default(0)
+  overallScore     Float             @default(0)
+}
+
+// 3. OBUNA VA TELEGRAM TO'LOV SO'ROVLARI (ADMIN TIZIMI UCHUN)
+model Subscription {
+  id               String            @id @default(cuid())
+  userId           String            @unique
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             PlanType          @default(FREE)
+  freeAiCredits    Int               @default(1) // Oylik qolgan AI limitlari
+  startDate        DateTime          @default(now())
+  endDate          DateTime?
+  isActive         Boolean           @default(true)
+}
+
+model PaymentRequest {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             PlanType?
+  coinAmount       Int?
+  priceUzbekSum    Int
+  status           PaymentStatus     @default(PENDING)
+  adminNote        String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// 4. TESTLAR VA SAVOLLAR BAZASI
+model Test {
+  id               String            @id @default(cuid())
+  title            String
+  description      String?
+  skill            SkillType
+  level            CefrLevel
+  timeLimitMinutes Int               @default(30)
+  audioUrl         String?           // Listening uchun Cloudflare R2 MP3
+  readingPassage   String?           @db.Text // Reading uchun matn
+  writingPrompt    String?           @db.Text // Writing mavzusi
+  speakingPrompt   String?           @db.Text // Speaking savoli
+  isPublished      Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+
+  questions        Question[]
+  submissions      Submission[]
+}
+
+model Question {
+  id               String            @id @default(cuid())
+  testId           String
+  test             Test              @relation(fields: [testId], references: [id], onDelete: Cascade)
+  orderIndex       Int               @default(1)
+  questionText     String            @db.Text
+  options          Json              // ["Variant A", "Variant B", "Variant C", "Variant D"]
+  correctOption    String            // "A" / "B" / "C" / "D" (Frontendga chiqmaydi)
+  explanation      String?           @db.Text // To'g'ri javob konteksti
+  difficultyLogit  Float             @default(0.0) // Rasch modeli parametri (beta_i)
+
+  answers          Answer[]
+}
+
+// 5. TOPSHIRILGAN JAVOBLAR VA NATIJALAR
+model Submission {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testId           String
+  test             Test              @relation(fields: [testId], references: [id], onDelete: Cascade)
+  mode             ExamMode          @default(STANDARD)
+  rawScore         Float             @default(0) // Rasch / Mezon balli
+  scaledScore      Float             @default(0) // 0 - 100 ball
+  achievedLevel    CefrLevel         @default(A1)
+  timeSpentSeconds Int               @default(0)
+  completedAt      DateTime          @default(now())
+
+  essayText        String?           @db.Text // Writing insho matni
+  audioRecordUrl   String?           // Speaking audio yozuvi (R2)
+
+  answers          Answer[]
+  diagnosticReport AiDiagnosticReport?
+
+  @@index([userId])
+  @@index([testId])
+}
+
+model Answer {
+  id               String            @id @default(cuid())
+  submissionId     String
+  submission       Submission        @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption   String            // O'quvchi tanlagan variant
+  isCorrect        Boolean           @default(false)
+}
+
+// 6. AI DIAGNOSTIKA VA TAHLIL HISOBOTI
+model AiDiagnosticReport {
+  id               String            @id @default(cuid())
+  submissionId     String            @unique
+  submission       Submission        @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  summary          String            @db.Text
+  scoresBreakdown  Json              // Mezonlar bo'yicha ballar {task: 22, coherence: 20, ...}
+  corrections      Json              // [{original: "...", corrected: "...", reason: "..."}]
+  vocabularyTips   Json              // [{used: "...", alternatives: [...]}]
+  grammarAnalysis  Json?             // Grammatik qoidalar tahlili
+  acousticMetrics  Json?             // Speaking: {wpm: 110, pauses: 3, fluency: 85}
+  createdAt        DateTime          @default(now())
+}
+
+// 7. COIN TRANZAKSIYALARI TARIXI
+model CoinTransaction {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount           Int               // +50 (bonus/xarid) yoki -15 (test/AI)
+  description      String            // "B2 Mock Testi yechildi", "Bonus tanga"
+  createdAt        DateTime          @default(now())
+
+  @@index([userId])
+}
