@@ -32,7 +32,7 @@ export function Hero() {
       {/* Dual CTA */}
       <div className="animate-in fade-in slide-in-from-bottom-10 duration-700 delay-500 ease-out mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
         <Link href="/sign-up" className={buttonVariants({ variant: "default", size: "lg", className: "w-full sm:w-auto bg-blue-600 hover:bg-blue-700 rounded-full h-14 px-8 text-lg font-medium shadow-lg shadow-blue-600/20 transition-all hover:scale-105" })}>
-          Ilovani ochish ->
+          Ilovani ochish -&gt;
         </Link>
         <Link href="#demo" className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto rounded-full h-14 px-8 text-lg font-medium border-slate-200 text-slate-700 hover:bg-slate-100/50 bg-white/50 backdrop-blur-sm transition-all hover:scale-105" })}>
           Namuna natijani ko'rish

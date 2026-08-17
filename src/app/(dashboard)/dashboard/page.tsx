@@ -51,7 +51,7 @@ export default async function DashboardPage() {
             <p className="text-blue-100 mt-2 max-w-xs">4 ta modulni o'z ichiga olgan CEFR sinov imtihonini boshlang.</p>
           </div>
           <Button asChild className="bg-white text-blue-600 hover:bg-blue-50 mt-4 font-bold rounded-xl px-6">
-            <Link href="/test/1">Mock Testni Boshlash -></Link>
+            <Link href="/test/1">Mock Testni Boshlash -&gt;</Link>
           </Button>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between h-48">
@@ -95,7 +95,7 @@ export default async function DashboardPage() {
                 <div className="text-3xl mb-3">🔒</div>
                 <h3 className="font-bold text-slate-900 mb-2">AI tahliliga kirish yopiq</h3>
                 <p className="text-sm text-slate-500 mb-4">Shaxsiy AI tahlili va tavsiyalarni olish uchun obuna bo'ling.</p>
-                <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl">Tarifni tanlash -></Button>
+                <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl">Tarifni tanlash -&gt;</Button>
               </div>
             </div>
           </>

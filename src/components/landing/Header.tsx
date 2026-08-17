@@ -119,7 +119,7 @@ export function Header() {
                 Tizimga kirish
               </Link>
               <Link href="/sign-up" className={buttonVariants({ variant: "default", className: "w-full rounded-xl h-12 text-lg" })}>
-                Ilovani ochish ->
+                Ilovani ochish -&gt;
               </Link>
             </div>
           </div>
