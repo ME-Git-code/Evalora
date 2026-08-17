@@ -1,18 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export default function TestRunnerPage({ params }: { params: { testId: string } }) {
+export default function TestRunnerPage() {
+  const params = useParams();
+  const testId = (params?.testId as string) || "1";
   const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 daqiqa
   const [isOffline, setIsOffline] = useState(false);
   const [offlineTimer, setOfflineTimer] = useState(180); // 3 daqiqa
   const [activeQuestion, setActiveQuestion] = useState(1);
 
+  // Test vaqti hisoblagichi
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
   // Offline holatini kuzatish
   useEffect(() => {
     const handleOffline = () => setIsOffline(true);
-    const handleOnline = () => setIsOffline(false);
+    const handleOnline = () => {
+      setIsOffline(false);
+      setOfflineTimer(180);
+    };
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
@@ -28,8 +41,6 @@ export default function TestRunnerPage({ params }: { params: { testId: string } 
     if (isOffline && offlineTimer > 0) {
       const timer = setInterval(() => setOfflineTimer((prev) => prev - 1), 1000);
       return () => clearInterval(timer);
-    } else if (!isOffline) {
-      setOfflineTimer(180); // Internet kelsa reset bo'ladi
     } else if (isOffline && offlineTimer === 0) {
       // Testni avtomatik yakunlash logikasi
       alert("Internet ulanishi uzoq vaqt yo'qolgani sababli test yakunlandi!");
@@ -46,7 +57,7 @@ export default function TestRunnerPage({ params }: { params: { testId: string } 
     <div className="flex flex-col h-screen relative">
       {/* Top Bar */}
       <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
-        <div className="font-medium text-slate-700">Reading · B2 Mock Test 1</div>
+        <div className="font-medium text-slate-700">Reading · B2 Mock Test #{testId}</div>
         <div className={`text-xl font-bold ${timeLeft < 60 ? "text-red-600 animate-pulse" : "text-slate-900"}`}>
           {formatTime(timeLeft)}
         </div>

@@ -13,10 +13,17 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { testId, skill, content } = body;
 
+    if (!testId || !skill) {
+      return new NextResponse("testId and skill are required", { status: 400 });
+    }
+
     // TODO: Baza (Prisma) orqali foydalanuvchining obunasi va AI limitlari tekshiriladi
     // Agar limit tugagan bo'lsa va Coin ham yetmasa, 403 qaytariladi.
 
     if (skill === "WRITING") {
+      if (!content) {
+        return new NextResponse("Content is required for WRITING skill", { status: 400 });
+      }
       // 1. Gemini API (gemini-1.5-flash) ga insho va TÖMER CEFR rubrikasi jo'natiladi
       // 2. Qat'iy JSON formatdagi baho, tushuntirish va xatolar tuzatmasi qaytariladi
       

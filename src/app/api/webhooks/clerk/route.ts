@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { PlanType } from '../../../../../generated/prisma/enums';
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -51,37 +52,58 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   if (eventType === 'user.created') {
-    // Generate customId (EV-XXXXXX)
-    const customId = `EV-${Math.floor(100000 + Math.random() * 900000)}`;
-    const email = evt.data.email_addresses?.[0]?.email_address || "";
-    
-    // Foydalanuvchini bazaga yozish
-    await prisma.user.create({
+    const existingUser = await prisma.user.findUnique({
+      where: { clerkId: id! }
+    });
+
+    if (!existingUser) {
+      // Generate customId (EV-XXXXXX)
+      const customId = `EV-${Math.floor(100000 + Math.random() * 900000)}`;
+      const email = evt.data.email_addresses?.[0]?.email_address || "";
+
+      // Foydalanuvchini, profili va bepul obunasini bitta atomik tranzaksiyada yaratish
+      await prisma.user.create({
+        data: {
+          clerkId: id!,
+          customId,
+          email,
+          fullName: evt.data.first_name ? `${evt.data.first_name} ${evt.data.last_name || ''}`.trim() : null,
+          avatarUrl: evt.data.image_url,
+          profile: {
+            create: {
+              updatedAt: new Date(),
+            }
+          },
+          subscription: {
+            create: {
+              plan: PlanType.FREE,
+              freeAiCredits: 2,
+              updatedAt: new Date(),
+            }
+          }
+        }
+      });
+    }
+  }
+
+  if (eventType === 'user.updated') {
+    const email = evt.data.email_addresses?.[0]?.email_address;
+    await prisma.user.updateMany({
+      where: { clerkId: id! },
       data: {
-        clerkId: id!,
-        customId: customId,
-        email: email,
+        ...(email ? { email } : {}),
         fullName: evt.data.first_name ? `${evt.data.first_name} ${evt.data.last_name || ''}`.trim() : null,
         avatarUrl: evt.data.image_url,
       }
     });
+  }
 
-    // Profilni va bo'sh natijalarni yaratish (Target Level default B2 qoladi)
-    await prisma.profile.create({
-      data: {
-        user: { connect: { clerkId: id! } },
-      }
-    });
-
-    // Bepul obunani taqdim etish (1 bepul kredit)
-    await prisma.subscription.create({
-      data: {
-        user: { connect: { clerkId: id! } },
-        plan: "FREE",
-        freeAiCredits: 2
-      }
+  if (eventType === 'user.deleted') {
+    await prisma.user.deleteMany({
+      where: { clerkId: id! }
     });
   }
 
   return NextResponse.json({ message: 'Webhook received' }, { status: 200 });
 }
+

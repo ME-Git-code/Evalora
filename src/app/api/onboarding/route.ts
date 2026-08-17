@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { CefrLevel } from "../../../../generated/prisma/enums";
 
 export async function POST(req: Request) {
   try {
@@ -10,19 +11,33 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    const fullName = formData.get("fullName") as string;
-    const targetLevel = formData.get("targetLevel") as any; // CefrLevel
-    
-    // Foydalanuvchining ismini yangilash
+    const fullName = (formData.get("fullName") as string)?.trim();
+    const phone = (formData.get("phone") as string)?.trim() || null;
+    const rawTargetLevel = formData.get("targetLevel") as string;
+    const targetLevel: CefrLevel = Object.values(CefrLevel).includes(rawTargetLevel as CefrLevel)
+      ? (rawTargetLevel as CefrLevel)
+      : CefrLevel.B2;
+
+    // Foydalanuvchi va profilni yangilash
     await prisma.user.update({
       where: { clerkId: userId },
-      data: { fullName }
-    });
-
-    // Profilni yangilash
-    await prisma.profile.update({
-      where: { userId: (await prisma.user.findUnique({ where: { clerkId: userId } }))?.id },
-      data: { targetLevel }
+      data: {
+        ...(fullName ? { fullName } : {}),
+        phone,
+        hasCompletedOnboarding: true,
+        profile: {
+          upsert: {
+            create: {
+              targetLevel,
+              updatedAt: new Date()
+            },
+            update: {
+              targetLevel,
+              updatedAt: new Date()
+            }
+          }
+        }
+      }
     });
 
     // Dashboardga qaytarish

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronRight, Target, Sparkles, AlertCircle } from "lucide-react";
 import { completeOnboarding } from "@/app/actions/onboarding";
-import { CefrLevel } from "@prisma/client";
+import { CefrLevel } from "../../../generated/prisma/enums";
 
 type Step = 1 | 2 | 3;
 

@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { CefrLevel } from "@prisma/client";
+import { CefrLevel } from "../../../generated/prisma/enums";
 
 export async function completeOnboarding(data: {
   fullName: string;
@@ -24,8 +24,15 @@ export async function completeOnboarding(data: {
         phone: data.phoneNumber || null,
         hasCompletedOnboarding: true,
         profile: {
-          update: {
-            targetLevel: data.targetLevel
+          upsert: {
+            create: {
+              targetLevel: data.targetLevel,
+              updatedAt: new Date()
+            },
+            update: {
+              targetLevel: data.targetLevel,
+              updatedAt: new Date()
+            }
           }
         }
       }
