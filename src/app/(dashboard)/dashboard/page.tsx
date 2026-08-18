@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { OnboardingModal } from "@/components/dashboard/OnboardingModal";
+import AiReportsList from "@/components/dashboard/AiReportsList";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -81,36 +82,8 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* AI Insights (Paywall preview) */}
-      <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="flex items-center justify-between mb-4 relative z-10">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span className="text-violet-600">✨</span> AI Maslahatchi
-          </h2>
-        </div>
-
-        {plan === "FREE" ? (
-          <>
-            <div className="bg-violet-50 rounded-xl p-5 border border-violet-100 relative z-10 blur-[2px] opacity-70 select-none">
-              <p className="text-slate-700">Sizda Listening ko'rsatkichi yaxshi, ammo Writing bo'limida argumentlashni kuchaytirish lozim...</p>
-            </div>
-            {/* Paywall Overlay */}
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
-              <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 text-center max-w-sm">
-                <div className="text-3xl mb-3">🔒</div>
-                <h3 className="font-bold text-slate-900 mb-2">AI tahliliga kirish yopiq</h3>
-                <p className="text-sm text-slate-500 mb-4">Shaxsiy AI tahlili va tavsiyalarni olish uchun obuna bo'ling.</p>
-                <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl">Tarifni tanlash -&gt;</Button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="bg-violet-50 rounded-xl p-5 border border-violet-100 relative z-10">
-            <p className="text-slate-700">Sizda oxirgi 3 ta imtihon bo'yicha Listening yaxshilangan. Writing qismida "Linking words" dan ko'proq foydalaning.</p>
-          </div>
-        )}
-      </section>
-    </div>
+      <AiReportsList />
+      </div>
     </>
   );
 }

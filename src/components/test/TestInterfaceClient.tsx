@@ -29,6 +29,11 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
   
   const [timeLeft, setTimeLeft] = useState(test.timeLimitMinutes * 60);
   const [activeTab, setActiveTab] = useState<"CONTENT" | "QUESTIONS">("CONTENT"); // Mobile only
+  
+  const [testStatus, setTestStatus] = useState<"PLAYING" | "QUICK_RESULT" | "AI_LIMIT" | "AI_LOADING" | "AI_RESULT">("PLAYING");
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [aiReport, setAiReport] = useState<any>(null);
+
   const [warningCount, setWarningCount] = useState(0);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
@@ -41,22 +46,13 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
 
   // Focus & Anti-Cheat Logic
   useEffect(() => {
-    if (!isExamMode) return;
+    if (!isExamMode || testStatus !== "PLAYING") return;
 
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        handleViolation();
-      }
+      if (document.hidden) handleViolation();
     };
-
-    const handleBlur = () => {
-      handleViolation();
-    };
-
-    const handleCopy = (e: ClipboardEvent) => {
-      e.preventDefault();
-      // Optional: count as violation
-    };
+    const handleBlur = () => handleViolation();
+    const handleCopy = (e: ClipboardEvent) => e.preventDefault();
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleBlur);
@@ -67,16 +63,14 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
       window.removeEventListener("blur", handleBlur);
       document.removeEventListener("copy", handleCopy);
     };
-  }, [isExamMode, warningCount, isFailed]);
+  }, [isExamMode, warningCount, isFailed, testStatus]);
 
   const handleViolation = () => {
     if (isFailed) return;
-    
     if (warningCount === 0) {
       setWarningCount(1);
       setShowWarningModal(true);
     } else {
-      // 2nd violation -> Fail test
       failTest();
     }
   };
@@ -84,14 +78,12 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
   const failTest = () => {
     setIsFailed(true);
     setShowWarningModal(false);
-    // submit test with 0 score -> handled in action later
     alert("Test yakunlandi: Qoidabuzarlik aniqlandi. 0 ball.");
     router.push("/results");
   };
 
-  // Timer logic
   useEffect(() => {
-    if (!isTimerEnabled || isFailed) return;
+    if (!isTimerEnabled || isFailed || testStatus !== "PLAYING") return;
     
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -105,7 +97,7 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isTimerEnabled, isFailed]);
+  }, [isTimerEnabled, isFailed, testStatus]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -113,24 +105,31 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const isTimeCritical = timeLeft < 60; // red text last minute
-
   const submitTest = async () => {
-    // API request here...
-    router.push("/results");
+    // Backendga yuborish (Mock)
+    setSubmissionId("mock-submission-id");
+    setTestStatus("QUICK_RESULT");
   };
 
   const handleAudioPlay = () => {
-    if (isExamMode && audioPlayed) {
-      // already played, do nothing
-      return;
-    }
+    if (isExamMode && audioPlayed) return;
     if (audioRef.current) {
       audioRef.current.play();
-      if (isExamMode) {
-        setAudioPlayed(true);
-      }
+      if (isExamMode) setAudioPlayed(true);
     }
+  };
+
+  const requestAiAnalysis = async () => {
+    setTestStatus("AI_LOADING");
+    // Generate AI
+    setTimeout(() => {
+      setAiReport({
+        summary: "Ushbu test natijalariga ko'ra sizning darajangiz B2 atrofida baholandi.",
+        corrections: [{ original: "wrong", corrected: "right", reason: "context" }],
+        recommendations: ["Ko'proq akademik matnlar o'qing"]
+      });
+      setTestStatus("AI_RESULT");
+    }, 3000);
   };
 
   if (isFailed) {
@@ -140,16 +139,16 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-slate-50 absolute inset-0 z-50">
       
-      {/* 1. YUQORI PANEL (Top Bar) */}
+      {/* 1. YUQORI PANEL */}
       <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 shrink-0">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             {isExamMode ? (
-              <div className="bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-rose-200 shadow-sm">
+              <div className="bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-rose-200">
                 <ShieldAlert className="w-4 h-4" /> Real Imtihon
               </div>
             ) : (
-              <div className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-emerald-200 shadow-sm">
+              <div className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold border border-emerald-200">
                 <BookOpen className="w-4 h-4" /> Standart Mashq
               </div>
             )}
@@ -162,12 +161,12 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
 
         <div className="flex items-center gap-4 sm:gap-6">
           {isTimerEnabled && (
-            <div className={`flex items-center gap-2 font-mono text-xl font-bold ${isTimeCritical ? "text-rose-600 animate-pulse" : "text-slate-700"}`}>
+            <div className={`flex items-center gap-2 font-mono text-xl font-bold ${timeLeft < 60 ? "text-rose-600 animate-pulse" : "text-slate-700"}`}>
               <Clock className="w-5 h-5" />
               {formatTime(timeLeft)}
             </div>
           )}
-          <Button onClick={submitTest} className="bg-blue-600 hover:bg-blue-700 text-white shadow-md rounded-xl">
+          <Button onClick={submitTest} disabled={testStatus !== "PLAYING"} className="bg-blue-600 hover:bg-blue-700 text-white shadow-md rounded-xl">
             Testni Yakunlash
           </Button>
         </div>
@@ -189,9 +188,8 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
         </button>
       </div>
 
-      {/* 2. ISHCHI MAYDON (Desktop 50/50, Mobile Tabbed) */}
-      <div className="flex-1 flex overflow-hidden">
-        
+      {/* 2. ISHCHI MAYDON */}
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Left Side: Content / Audio */}
         <div className={`flex-1 overflow-y-auto bg-white border-r border-slate-200 p-6 sm:p-8 lg:block ${activeTab === "CONTENT" ? "block" : "hidden"}`}>
           {test.audioUrl && (
@@ -226,7 +224,6 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
 
           {test.readingPassage && (
             <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed custom-scrollbar">
-              {/* Fake content render */}
               <div dangerouslySetInnerHTML={{ __html: test.readingPassage }} />
             </div>
           )}
@@ -295,10 +292,97 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
             ))}
           </div>
         </div>
+        
+        {/* MODALS LAYER */}
+        {testStatus !== "PLAYING" && (
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            
+            {/* Quick Result Modal */}
+            {testStatus === "QUICK_RESULT" && (
+              <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+                <div className="p-6 text-center border-b border-slate-100">
+                  <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check className="w-10 h-10 text-emerald-600" />
+                  </div>
+                  <h2 className="text-2xl font-black text-slate-900">82% Ball</h2>
+                  <p className="text-slate-500 font-medium">B2 Daraja</p>
+                  <div className="flex justify-center gap-2 mt-3">
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">+41 XP</span>
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">+1 Coin</span>
+                  </div>
+                </div>
+                <div className="p-6 bg-slate-50 flex flex-col gap-3">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold h-12 text-lg shadow-md" onClick={() => setTestStatus("AI_LIMIT")}>
+                    ✨ AI Xulosasini Olish
+                  </Button>
+                  <Button variant="outline" className="w-full text-slate-600 border-slate-300" onClick={() => router.push("/results")}>
+                    Yakunlash va Natijalarga o'tish
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* AI Limit Modal */}
+            {testStatus === "AI_LIMIT" && (
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center animate-in zoom-in-95">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <HelpCircle className="w-8 h-8 text-blue-600" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">AI Tahlili Tasdiqlash</h2>
+                <p className="text-slate-600 text-sm mb-6 leading-relaxed">
+                  Sizda joriy oylik tarifingizdan 3 ta AI tahlil limiti bor. Ushbu tahlil uchun 1 ta limit sarflanadi.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => setTestStatus("QUICK_RESULT")}>Orqaga</Button>
+                  <Button className="flex-1 bg-blue-600 text-white" onClick={requestAiAnalysis}>Davom etish</Button>
+                </div>
+              </div>
+            )}
+
+            {/* Loading Modal */}
+            {testStatus === "AI_LOADING" && (
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-8 text-center flex flex-col items-center">
+                <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-6"></div>
+                <h3 className="font-bold text-slate-900 text-lg mb-2">AI Tahlil Qilmoqda...</h3>
+                <p className="text-sm text-slate-500 animate-pulse">Shaxsiy xulosa va tushuntirishlar shakllantirilmoqda...</p>
+              </div>
+            )}
+
+            {/* AI Result Modal */}
+            {testStatus === "AI_RESULT" && aiReport && (
+              <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-blue-50 shrink-0">
+                  <h2 className="text-xl font-black text-blue-900 flex items-center gap-2">✨ AI Diagnostika Xulosasi</h2>
+                </div>
+                <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                  <div className="prose prose-slate max-w-none">
+                    <p className="text-lg font-medium text-slate-800 leading-relaxed mb-6">{aiReport.summary}</p>
+                    
+                    <h3 className="text-slate-900 font-bold mb-4">Tavsiyalar:</h3>
+                    <ul className="space-y-2 mb-6">
+                      {aiReport.recommendations.map((rec: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2 text-slate-700">
+                          <Check className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" /> {rec}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+                  <Button className="bg-slate-900 hover:bg-slate-800 text-white" onClick={() => router.push("/results")}>
+                    Natijalarim bo'limiga o'tish
+                  </Button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
       </div>
 
       {/* Warning Modal */}
-      {showWarningModal && (
+      {showWarningModal && testStatus === "PLAYING" && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center animate-in zoom-in-95">
             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
