@@ -35,6 +35,8 @@ interface AppLayoutProps {
   } | null;
 }
 
+import FloatingSupport from "./FloatingSupport";
+
 export default function AppLayoutClient({ children, user }: AppLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -284,6 +286,8 @@ export default function AppLayoutClient({ children, user }: AppLayoutProps) {
           {children}
         </main>
       </div>
+
+      <FloatingSupport />
     </div>
   );
 }
