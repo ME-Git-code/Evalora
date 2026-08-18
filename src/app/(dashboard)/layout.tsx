@@ -37,6 +37,9 @@ export default async function DashboardLayout({
           <Link href="/leaderboard" className="flex items-center px-3 py-2 rounded-lg hover:bg-slate-100">
             🏆 Reyting
           </Link>
+          <Link href="/pricing" className="flex items-center px-3 py-2 rounded-lg hover:bg-slate-100">
+            💰 Obuna
+          </Link>
         </nav>
         <div className="p-4 border-t border-slate-200">
           <Link href="/settings" className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">
