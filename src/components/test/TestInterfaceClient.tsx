@@ -310,26 +310,35 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
                     <p className="font-semibold text-slate-800 text-lg mb-4">{q.questionText}</p>
                     
                     <div className="space-y-3">
-                      {q.options?.map((opt: string) => (
-                        <label 
-                          key={opt}
-                          className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                            answers[q.id] === opt 
-                              ? "bg-blue-50 border-blue-400 text-blue-900" 
-                              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          <input 
-                            type="radio" 
-                            name={`question-${q.id}`} 
-                            value={opt} 
-                            checked={answers[q.id] === opt}
-                            onChange={() => setAnswers(prev => ({ ...prev, [q.id]: opt }))}
-                            className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600" 
-                          />
-                          <span className="font-medium text-sm">{opt}</span>
-                        </label>
-                      ))}
+                      {Array.isArray(q.options) && q.options.length > 0 ? (
+                        q.options.map((opt: string) => (
+                          <label 
+                            key={opt}
+                            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                              answers[q.id] === opt 
+                                ? "bg-blue-50 border-blue-400 text-blue-900" 
+                                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                            }`}
+                          >
+                            <input 
+                              type="radio" 
+                              name={`question-${q.id}`} 
+                              value={opt} 
+                              checked={answers[q.id] === opt}
+                              onChange={() => setAnswers(prev => ({ ...prev, [q.id]: opt }))}
+                              className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600" 
+                            />
+                            <span className="font-medium text-sm">{opt}</span>
+                          </label>
+                        ))
+                      ) : (
+                        <textarea
+                          value={answers[q.id] || ""}
+                          onChange={(e) => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                          placeholder="Javobingizni (inshoni) bu yerga yozing..."
+                          className="w-full h-64 p-4 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-slate-800 leading-relaxed custom-scrollbar"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
