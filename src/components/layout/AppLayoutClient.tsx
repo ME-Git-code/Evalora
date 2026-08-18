@@ -36,7 +36,6 @@ interface AppLayoutProps {
 }
 
 import FloatingSupport from "./FloatingSupport";
-import Footer from "./Footer";
 
 export default function AppLayoutClient({ children, user }: AppLayoutProps) {
   const pathname = usePathname();
@@ -283,13 +282,8 @@ export default function AppLayoutClient({ children, user }: AppLayoutProps) {
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="flex-1 flex flex-col px-4 md:px-8 pb-24 md:pb-8 pt-4 overflow-x-hidden min-h-screen">
-          <div className="flex-1">
-            {children}
-          </div>
-          <div className="mt-12 -mx-4 md:-mx-8 -mb-24 md:-mb-8">
-            <Footer />
-          </div>
+        <main className="flex-1 px-4 md:px-8 pb-24 md:pb-8 pt-4 overflow-x-hidden">
+          {children}
         </main>
       </div>
 
