@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import AppLayoutClient from "@/components/layout/AppLayoutClient";
-import { PlanType } from "../../../generated/prisma/enums";
+import { PlanType } from "../../../../generated/prisma/enums";
 
 export default async function DashboardLayout({
   children,

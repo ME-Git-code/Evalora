@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SettingsClient from "@/components/dashboard/SettingsClient";
-import { PlanType } from "../../../../generated/prisma/enums";
+import { PlanType } from "../../../../../generated/prisma/enums";
 
 export const metadata = {
   title: "Sozlamalar | Evalora",

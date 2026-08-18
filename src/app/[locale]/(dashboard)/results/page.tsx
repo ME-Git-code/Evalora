@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ResultsClient from "@/components/dashboard/ResultsClient";
-import { PlanType } from "../../../../generated/prisma/enums";
+import { PlanType } from "../../../../../generated/prisma/enums";
 
 export const metadata = {
   title: "Natijalarim | Evalora",
