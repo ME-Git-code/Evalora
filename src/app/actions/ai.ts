@@ -52,19 +52,30 @@ export async function generateAIDiagnostic(submissionId: string) {
   const report = await prisma.aiDiagnosticReport.create({
     data: {
       submissionId,
-      summary: "Ushbu test natijalariga ko'ra sizning darajangiz B2 atrofida baholandi. Reading qismida murakkab so'zlar bilan ishlashda kamchiliklar bor.",
-      scoresBreakdown: { reading: 85, listening: 0, writing: 0, speaking: 0 },
+      summary: "Konuşmanız akıcı ve anlaşılır, genel B2 seviyesine uygun.",
+      scoresBreakdown: { fluency: 22, pronunciation: 21, vocabulary: 20, grammar: 23, totalScore: 86 },
       corrections: [
         {
-          original: "I choosed this option",
-          corrected: "I chose this option",
-          reason: "Tog'ri javob kontekstda o'tgan zamonda bo'lishi kerak."
+          spoken: "Ben gitmek istedim ama zaman yoktu.",
+          improved: "Gitmek istememe rağmen yeterli vaktim bulunmuyordu.",
+          explanation: "C1 seviyesi için zarf-fiil yapıları kullanmanız önerilir."
         }
       ],
-      vocabularyTips: ["Enhance", "Deteriorate", "Accomplish"],
+      vocabularyTips: [
+        {
+          used: "çok önemli",
+          alternatives: ["hayati önem taşıyan", "büyük ehemmiyete sahip"]
+        }
+      ],
+      acousticMetrics: [
+        {
+          word: "yapacağım",
+          issue: "Yumuşak G uzatması yerine sert telaffuz edildi."
+        }
+      ],
       recommendations: [
-        "Ko'proq akademik matnlar o'qing",
-        "Noto'g'ri tanlagan savollaringizdagi chalg'ituvchi so'zlarga e'tibor bering"
+        "Ko'proq akademik matnlar o'qing (Okuma parçalarını analiz edin)",
+        "Telaffuz mashqlari qiling (Diksiyon çalışmaları yapın)"
       ]
     }
   });

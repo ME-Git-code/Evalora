@@ -124,9 +124,14 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
     // Generate AI
     setTimeout(() => {
       setAiReport({
-        summary: "Ushbu test natijalariga ko'ra sizning darajangiz B2 atrofida baholandi.",
-        corrections: [{ original: "wrong", corrected: "right", reason: "context" }],
-        recommendations: ["Ko'proq akademik matnlar o'qing"]
+        summary: "Konuşmanız akıcı ve anlaşılır, genel B2 seviyesine uygun.",
+        pronunciationErrors: [
+          { word: "yapacağım", issue: "Yumuşak G uzatması yerine sert telaffuz edildi." }
+        ],
+        grammarErrors: [
+          { spoken: "Ben gitmek istedim ama zaman yoktu.", improved: "Gitmek istememe rağmen yeterli vaktim bulunmuyordu.", explanation: "C1 seviyesi için zarf-fiil yapıları kullanmanız önerilir." }
+        ],
+        recommendations: ["Ko'proq akademik matnlar o'qing (Okuma parçalarını analiz edin)", "Telaffuz mashqlari qiling (Diksiyon çalışmaları yapın)"]
       });
       setTestStatus("AI_RESULT");
     }, 3000);
@@ -312,10 +317,10 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
                   </div>
                 </div>
                 <div className="p-6 bg-slate-50 flex flex-col gap-3">
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold h-12 text-lg shadow-md" onClick={() => setTestStatus("AI_LIMIT")}>
+                  <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold h-12 text-lg shadow-md rounded-xl transition-all" onClick={() => setTestStatus("AI_LIMIT")}>
                     ✨ AI Xulosasini Olish
                   </Button>
-                  <Button variant="outline" className="w-full text-slate-600 border-slate-300" onClick={() => router.push("/results")}>
+                  <Button variant="outline" className="w-full text-slate-600 border-slate-300 rounded-xl h-11 hover:bg-slate-100 transition-colors" onClick={() => router.push("/results")}>
                     Yakunlash va Natijalarga o'tish
                   </Button>
                 </div>
@@ -325,16 +330,16 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
             {/* AI Limit Modal */}
             {testStatus === "AI_LIMIT" && (
               <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center animate-in zoom-in-95">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <HelpCircle className="w-8 h-8 text-blue-600" />
+                <div className="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <HelpCircle className="w-8 h-8 text-violet-600" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-900 mb-2">AI Tahlili Tasdiqlash</h2>
                 <p className="text-slate-600 text-sm mb-6 leading-relaxed">
                   Sizda joriy oylik tarifingizdan 3 ta AI tahlil limiti bor. Ushbu tahlil uchun 1 ta limit sarflanadi.
                 </p>
                 <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1" onClick={() => setTestStatus("QUICK_RESULT")}>Orqaga</Button>
-                  <Button className="flex-1 bg-blue-600 text-white" onClick={requestAiAnalysis}>Davom etish</Button>
+                  <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={() => setTestStatus("QUICK_RESULT")}>Orqaga</Button>
+                  <Button className="flex-1 bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-11" onClick={requestAiAnalysis}>Davom etish</Button>
                 </div>
               </div>
             )}
@@ -342,7 +347,7 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
             {/* Loading Modal */}
             {testStatus === "AI_LOADING" && (
               <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-8 text-center flex flex-col items-center">
-                <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-6"></div>
+                <div className="w-16 h-16 border-4 border-violet-100 border-t-violet-600 rounded-full animate-spin mb-6"></div>
                 <h3 className="font-bold text-slate-900 text-lg mb-2">AI Tahlil Qilmoqda...</h3>
                 <p className="text-sm text-slate-500 animate-pulse">Shaxsiy xulosa va tushuntirishlar shakllantirilmoqda...</p>
               </div>
@@ -351,16 +356,46 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
             {/* AI Result Modal */}
             {testStatus === "AI_RESULT" && aiReport && (
               <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95">
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-blue-50 shrink-0">
-                  <h2 className="text-xl font-black text-blue-900 flex items-center gap-2">✨ AI Diagnostika Xulosasi</h2>
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-violet-50 shrink-0">
+                  <h2 className="text-xl font-black text-violet-900 flex items-center gap-2">✨ AI Diagnostika Xulosasi</h2>
                 </div>
                 <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                   <div className="prose prose-slate max-w-none">
                     <p className="text-lg font-medium text-slate-800 leading-relaxed mb-6">{aiReport.summary}</p>
                     
-                    <h3 className="text-slate-900 font-bold mb-4">Tavsiyalar:</h3>
+                    {/* Dynamic Turkish Speaking / General Errors Render */}
+                    {aiReport.pronunciationErrors && aiReport.pronunciationErrors.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-slate-900 font-bold mb-3 flex items-center gap-2"><span className="text-violet-500">🗣</span> Telaffuz Hataları</h3>
+                        <div className="space-y-3">
+                          {aiReport.pronunciationErrors.map((err: any, i: number) => (
+                            <div key={i} className="bg-rose-50 p-3 rounded-xl border border-rose-100">
+                              <p className="font-bold text-rose-700 mb-1">"{err.word}"</p>
+                              <p className="text-sm text-slate-700">{err.issue}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {aiReport.grammarErrors && aiReport.grammarErrors.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-slate-900 font-bold mb-3 flex items-center gap-2"><span className="text-violet-500">📝</span> Dilbilgisi Hataları</h3>
+                        <div className="space-y-3">
+                          {aiReport.grammarErrors.map((err: any, i: number) => (
+                            <div key={i} className="bg-amber-50 p-3 rounded-xl border border-amber-100">
+                              <p className="font-medium text-slate-500 line-through text-sm">{err.spoken}</p>
+                              <p className="font-bold text-emerald-700 mb-1">{err.improved}</p>
+                              <p className="text-sm text-slate-700">{err.explanation}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <h3 className="text-slate-900 font-bold mb-4">Tavsiyalar (Öneriler):</h3>
                     <ul className="space-y-2 mb-6">
-                      {aiReport.recommendations.map((rec: string, i: number) => (
+                      {aiReport.recommendations?.map((rec: string, i: number) => (
                         <li key={i} className="flex items-start gap-2 text-slate-700">
                           <Check className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" /> {rec}
                         </li>
@@ -369,7 +404,7 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
                   </div>
                 </div>
                 <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
-                  <Button className="bg-slate-900 hover:bg-slate-800 text-white" onClick={() => router.push("/results")}>
+                  <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-11 px-6" onClick={() => router.push("/results")}>
                     Natijalarim bo'limiga o'tish
                   </Button>
                 </div>
