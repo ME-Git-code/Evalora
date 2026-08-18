@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, Clock, AlertTriangle, Target, HelpCircle, Activity } from "lucide-react";
+import { X, Clock, AlertTriangle, Target, HelpCircle, Activity, ShieldAlert, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TestData {
@@ -19,12 +19,14 @@ interface TestData {
 export default function PreTestModal({ test, onClose }: { test: TestData, onClose: () => void }) {
   const router = useRouter();
   const [timerEnabled, setTimerEnabled] = useState(true);
+  const [isExamMode, setIsExamMode] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
   const handleStart = () => {
     setIsStarting(true);
-    // Redirect to test page with timer query param
-    router.push(`/test/${test.id}?timer=${timerEnabled}`);
+    // mode=EXAM or PRACTICE, timer=true/false
+    const mode = isExamMode ? "EXAM" : "PRACTICE";
+    router.push(`/test/${test.id}?timer=${timerEnabled}&mode=${mode}`);
   };
 
   return (
@@ -56,13 +58,7 @@ export default function PreTestModal({ test, onClose }: { test: TestData, onClos
         </div>
 
         {/* Content */}
-        <div className="p-6 flex flex-col gap-6">
-          {test.description && (
-            <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
-              {test.description}
-            </p>
-          )}
-
+        <div className="p-6 flex flex-col gap-5">
           {/* Meta Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-white">
@@ -84,47 +80,69 @@ export default function PreTestModal({ test, onClose }: { test: TestData, onClos
                 <p className="font-semibold text-slate-900 text-sm">{test.timeLimitMinutes} daqiqa</p>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-white col-span-2 sm:col-span-1">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <Activity className="w-4 h-4" />
-              </div>
+          {/* Mode Selection */}
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            <button
+              onClick={() => setIsExamMode(false)}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                !isExamMode
+                  ? "bg-white text-blue-600 shadow-sm border border-blue-100"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              Standart Mashq
+            </button>
+            <button
+              onClick={() => { setIsExamMode(true); setTimerEnabled(true); }} // Exam mode must have timer
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                isExamMode
+                  ? "bg-white text-rose-600 shadow-sm border border-rose-100"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              <ShieldAlert className="w-4 h-4" />
+              Real Imtihon
+            </button>
+          </div>
+
+          {/* Settings / Warnings based on Mode */}
+          {!isExamMode ? (
+            <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50">
               <div>
-                <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Urinishlar</p>
-                <p className="font-semibold text-slate-900 text-sm">{test.attempts} marta</p>
+                <p className="font-medium text-slate-900 text-sm mb-0.5 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-slate-500" />
+                  Vaqt chegarasi (Timer)
+                </p>
+                <p className="text-xs text-slate-500">
+                  Vaqt o'chirilsa tajriba balli (XP) berilmaydi
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={timerEnabled}
+                  onChange={(e) => setTimerEnabled(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          ) : (
+            <div className="bg-rose-50 border border-rose-500/30 rounded-xl p-4 flex gap-3 text-rose-800 shadow-sm">
+              <ShieldAlert className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
+              <div className="text-sm leading-relaxed">
+                <strong>DIQQAT! Real Imtihon Rejimi</strong>
+                <ul className="mt-2 space-y-1.5 text-xs text-rose-700">
+                  <li className="flex items-start gap-1.5"><span className="text-rose-500">•</span> Audioni qayta eshitish yoki pauza qilish bloklanadi.</li>
+                  <li className="flex items-start gap-1.5"><span className="text-rose-500">•</span> Ekranni suratga olish yoki nusxalash taqiqlanadi.</li>
+                  <li className="flex items-start gap-1.5"><span className="text-rose-500">•</span> <strong>Boshqa dastur/tabga o'tish testni 0 ball bilan to'xtatadi.</strong></li>
+                </ul>
               </div>
             </div>
-          </div>
-
-          {/* Timer Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-slate-50">
-            <div>
-              <p className="font-medium text-slate-900 text-sm mb-0.5 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-500" />
-                Vaqt chegarasi (Timer)
-              </p>
-              <p className="text-xs text-slate-500">
-                Vaqt o'chirilsa tajriba balli (XP) berilmaydi
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
-                checked={timerEnabled}
-                onChange={(e) => setTimerEnabled(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          {/* Warning */}
-          <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex gap-3 text-rose-800">
-            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
-            <div className="text-sm leading-relaxed">
-              <strong>Diqqat!</strong> Test boshlangandan so'ng oynadan chiqib ketish yoki sahifani yangilash testni yakunlangan deb hisoblaydi. Bunday holatda 0 ball beriladi.
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -138,7 +156,8 @@ export default function PreTestModal({ test, onClose }: { test: TestData, onClos
             Bekor qilish
           </Button>
           <Button 
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" 
+            className={`flex-1 text-white ${isExamMode ? "bg-rose-600 hover:bg-rose-700" : "bg-blue-600 hover:bg-blue-700"}`}
+
             onClick={handleStart}
             disabled={isStarting}
           >
