@@ -82,22 +82,81 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
     router.push("/results");
   };
 
+  // Anti-Cheat (Visibility API) and Timer
   useEffect(() => {
-    if (!isTimerEnabled || isFailed || testStatus !== "PLAYING") return;
-    
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          submitTest();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    let interval: NodeJS.Timeout;
+    if (timeLeft > 0 && testStatus === "PLAYING" && !isFailed) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft <= 0 && testStatus === "PLAYING") {
+      submitTest(); // Auto submit
+    }
+    return () => clearInterval(interval);
+  }, [testStatus, timeLeft, isFailed]);
 
-    return () => clearInterval(timer);
-  }, [isTimerEnabled, isFailed, testStatus]);
+  // Offline Protection & Auto-Save
+  const [isOffline, setIsOffline] = useState(false);
+  const [offlineTimeLeft, setOfflineTimeLeft] = useState(180); // 3 minutes grace
+
+  useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => {
+      setIsOffline(false);
+      setOfflineTimeLeft(180);
+    };
+    
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (testStatus === "PLAYING") {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [testStatus]);
+
+  useEffect(() => {
+    let offlineInterval: NodeJS.Timeout;
+    if (isOffline && testStatus === "PLAYING") {
+      offlineInterval = setInterval(() => {
+        setOfflineTimeLeft((prev) => {
+          if (prev <= 1) {
+            submitTest(); // auto submit after 3 mins
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(offlineInterval);
+  }, [isOffline, testStatus]);
+
+  // LocalStorage auto-save every 5s
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+      if (testStatus === "PLAYING") {
+        localStorage.setItem(`evalora_test_${test.id}`, JSON.stringify(answers));
+      }
+    }, 5000);
+    return () => clearInterval(saveInterval);
+  }, [answers, testStatus, test.id]);
+
+  // Restore from LocalStorage on mount
+  useEffect(() => {
+    const cached = localStorage.getItem(`evalora_test_${test.id}`);
+    if (cached && Object.keys(answers).length === 0) {
+      try { setAnswers(JSON.parse(cached)); } catch (e) {}
+    }
+  }, [test.id]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -297,6 +356,24 @@ export default function TestInterfaceClient({ test, isTimerEnabled, isExamMode }
             ))}
           </div>
         </div>
+
+      {/* Offline Modal */}
+      {isOffline && testStatus === "PLAYING" && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-8 text-center border-t-4 border-rose-500 animate-in zoom-in-95">
+            <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+              <span className="text-3xl">⚠️</span>
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Internet uzildi!</h2>
+            <p className="text-slate-600 mb-6 leading-relaxed">
+              Iltimos, ulanishni tekshiring. Aks holda test avtomatik yakunlanadi.
+            </p>
+            <div className="text-3xl font-mono font-bold text-rose-600 bg-rose-50 rounded-xl py-3 border border-rose-100">
+              {formatTime(offlineTimeLeft)}
+            </div>
+          </div>
+        </div>
+      )}
         
         {/* MODALS LAYER */}
         {testStatus !== "PLAYING" && (
