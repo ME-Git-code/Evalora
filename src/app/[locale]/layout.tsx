@@ -22,6 +22,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Evalora Platform",
   description: "Turk tili CEFR imtihoniga tayyorgarlik platformasi",
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default async function RootLayout({

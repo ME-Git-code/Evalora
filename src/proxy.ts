@@ -4,19 +4,31 @@ import { routing } from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
-const isProtectedRoute = createRouteMatcher(['/(.*)/dashboard(.*)', '/(.*)/test(.*)', '/(.*)/results(.*)', '/(.*)/settings(.*)', '/dashboard(.*)']);
+// Himoyalangan sahifalar (prefiksli va prefikssiz barcha holatlar uchun)
+const isProtectedRoute = createRouteMatcher([
+  '/(.*)/dashboard(.*)',
+  '/(.*)/test(.*)',
+  '/(.*)/results(.*)',
+  '/(.*)/settings(.*)',
+  '/dashboard(.*)',
+  '/test(.*)',
+  '/results(.*)',
+  '/settings(.*)',
+]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect();
-  
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+
   return intlMiddleware(req);
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
+    // Next.js ichki fayllari va statik fayllarni o'tkazib yuborish
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
+    // Har doim API yo'nalishlarida ishlash
     '/(api|trpc)(.*)',
   ],
 };

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 80" fill="none">
+  <defs>
+    <linearGradient id="titaniumLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Belgi (Icon) -->
+  <g transform="translate(10, 8)">
+    <path d="M12 14L20 9V55L12 50V14Z" fill="url(#titaniumLogo)"/>
+    <path d="M25 9H58L47 20H25V9Z" fill="url(#titaniumLogo)"/>
+    <path d="M25 28H44L36 36H25V28Z" fill="url(#titaniumLogo)"/>
+    <path d="M25 44H48L56 55H25V44Z" fill="url(#titaniumLogo)"/>
+  </g>
+
+  <!-- Tesla uslubidagi kengaytirilgan sarlavha -->
+  <text x="92" y="46" 
+        font-family="system-ui, -apple-system, sans-serif" 
+        font-size="28" 
+        font-weight="900" 
+        letter-spacing="10" 
+        fill="#0F172A">
+    EVALORA
+  </text>
+
+  <!-- Kichik aniqlik nuqtasi -->
+  <circle cx="395" cy="42" r="3.5" fill="#0284C7"/>
+</svg>
