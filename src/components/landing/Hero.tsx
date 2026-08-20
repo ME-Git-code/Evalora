@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Sparkles } from "lucide-react";
@@ -10,10 +11,23 @@ const Ballpit = dynamic(() => import("@/components/ui/Ballpit"), {
 });
 
 export function Hero() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkScreen = () => {
+      // 768px dan katta bo'lsa desktop deb oladi
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    checkScreen();
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
+
   return (
     <section className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center text-center px-4 pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-48 lg:pb-32 bg-[#faf8f2]">
 
-      {/* Glacier Mist Aura Background */}
+      {/* Glacier Mist Aura Fon Qatlamlari (Ham mobil, ham desktopda qoladi) */}
       <div
         className="absolute inset-0 pointer-events-none blur-[93px] md:blur-[133px]"
         style={{
@@ -33,27 +47,29 @@ export function Hero() {
         aria-hidden="true"
       />
 
-      {/* 3D Ballpit */}
-      <div className="absolute inset-0 z-0 pointer-events-auto">
-        <Ballpit
-          count={90}
-          gravity={0}
-          friction={0.998}
-          wallBounce={0.95}
-          followCursor={false}
-          minSize={0.35}
-          maxSize={0.75}
-          colors={[
-            0xffffff,
-            0x2563eb,
-            0x111827,
-            0x7c3aed,
-            0x10b981
-          ]}
-        />
-      </div>
+      {/* 3D Ballpit - Faqat kompyuter (>=768px) ekranlarida yuklanadi */}
+      {isDesktop && (
+        <div className="absolute inset-0 z-0 pointer-events-auto">
+          <Ballpit
+            count={90}
+            gravity={0}
+            friction={0.998}
+            wallBounce={0.95}
+            followCursor={false}
+            minSize={0.35}
+            maxSize={0.75}
+            colors={[
+              0xffffff,
+              0x2563eb,
+              0x111827,
+              0x7c3aed,
+              0x10b981
+            ]}
+          />
+        </div>
+      )}
 
-      {/* Asosiy kontent */}
+      {/* Asosiy kontent qismi */}
       <div className="relative z-10 flex flex-col items-center max-w-5xl mx-auto pointer-events-none">
 
         {/* Pill Badge */}
@@ -62,7 +78,7 @@ export function Hero() {
           <span className="text-[11px] sm:text-sm">Tinglash, O'qish, Yozish va Gapirish uchun AI mock</span>
         </div>
 
-        {/* Sarlavha (Mobil uchun text-3xl, desktop uchun text-7xl) */}
+        {/* Sarlavha */}
         <h1 className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150 ease-out max-w-4xl text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.2] sm:leading-[1.15]">
           CEFR imtihonlariga{" "}
           <span className="text-violet-600 relative inline-block">
