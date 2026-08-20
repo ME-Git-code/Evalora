@@ -32,7 +32,7 @@ export function HowItWorks() {
         <div className="grid md:grid-cols-3 gap-8 relative">
           {/* Connector Line (Desktop) */}
           <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-slate-100 -z-10"></div>
-          
+
           {steps.map((step, index) => (
             <div key={index} className="flex flex-col items-center text-center relative z-10">
               <div className="w-24 h-24 rounded-full bg-slate-50 border-8 border-white shadow-sm flex items-center justify-center mb-6">
