@@ -1,13 +1,9 @@
-import { ClerkProvider } from "@clerk/nextjs";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import type { Metadata } from "next";
+import "@/app/globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
-import "../globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,41 +15,46 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Evalora Platform",
-  description: "Turk tili CEFR imtihoniga tayyorgarlik platformasi",
-  icons: {
-    icon: '/icon.svg',
-  },
-};
-
-export default async function RootLayout({
+export default async function LocaleLayout({
   children,
-  params
+  params,
 }: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!routing.locales.includes(locale as any)) {
-    notFound();
-  }
-
   const messages = await getMessages();
 
   return (
-    <ClerkProvider>
-      <html
-        lang={locale}
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      >
-        <body className="min-h-full flex flex-col">
-          <NextIntlClientProvider messages={messages}>
-            <TooltipProvider>{children}</TooltipProvider>
-            <Toaster position="top-center" richColors />
-          </NextIntlClientProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html
+      lang={locale}
+      data-scroll-behavior="smooth"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
+    >
+      <body className="min-h-full flex flex-col bg-[#faf8f2] text-slate-900 relative">
+
+        {/* Butun sahifa bo'ylab yagona silliq qatlam */}
+        <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+          <div
+            className="absolute -top-[10%] -left-[10%] -right-[10%] -bottom-[10%] blur-[120px] md:blur-[180px] opacity-75"
+            style={{
+              background:
+                'radial-gradient(circle at 50% 20%, rgba(77,210,255,0.28) 0%, rgba(255,255,255,0) 50%), radial-gradient(circle at 80% 60%, rgba(53,230,192,0.22) 0%, rgba(255,255,255,0) 50%), radial-gradient(circle at 20% 80%, rgba(91,110,245,0.2) 0%, rgba(255,255,255,0) 50%)',
+            }}
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Asosiy kontent */}
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <TooltipProvider>
+            <div className="relative z-[1] flex-1 flex flex-col bg-transparent">
+              {children}
+            </div>
+          </TooltipProvider>
+          <Toaster position="top-center" richColors />
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }

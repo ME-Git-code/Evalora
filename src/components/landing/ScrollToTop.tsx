@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
@@ -8,11 +8,7 @@ export function ScrollToTop() {
 
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.scrollY > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(window.scrollY > 300);
     };
 
     window.addEventListener("scroll", toggleVisibility);
@@ -26,17 +22,15 @@ export function ScrollToTop() {
     });
   };
 
-  if (!isVisible) {
-    return null;
-  }
+  if (!isVisible) return null;
 
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-6 right-6 p-3 rounded-full bg-slate-900 text-white shadow-xl hover:bg-slate-800 transition-all z-50 animate-in fade-in zoom-in duration-300 hover:-translate-y-1"
+      className="fixed bottom-6 right-6 w-11 h-11 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white backdrop-blur-md shadow-xl border border-white/20 flex items-center justify-center transition-all z-50 animate-in fade-in zoom-in-95 duration-200 hover:scale-110 active:scale-95"
       aria-label="Tepaga qaytish"
     >
-      <ChevronUp className="w-6 h-6" />
+      <ChevronUp className="w-5 h-5" />
     </button>
   );
 }

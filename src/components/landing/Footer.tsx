@@ -1,77 +1,114 @@
-import Link from "next/link";
+'use client';
+
+import Image from "next/image";
+import { useLocale } from "next-intl";
+import { usePathname, useRouter, Link } from "@/i18n/routing";
 import { Send, Mail } from "lucide-react";
 
-export function Footer() {
-  return (
-    <footer className="bg-slate-900 pt-16 pb-8 border-t border-slate-800">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+const languages = [
+  { code: 'uz', name: "O'zbekcha", short: 'UZ' },
+  { code: 'tr', name: 'Türkçe', short: 'TR' },
+  { code: 'en', name: 'English', short: 'EN' },
+  { code: 'ru', name: 'Русский', short: 'RU' },
+];
 
+export function Footer() {
+  const currentLocale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLanguageChange = (newLocale: string) => {
+    router.replace(pathname, { locale: newLocale });
+  };
+
+  return (
+    <footer className="bg-white/35 backdrop-blur-2xl border-t border-white/60 pt-16 pb-8 text-slate-700">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+
+          {/* 1. Brand */}
           <div className="md:col-span-1">
-            <Link href="/" className="text-2xl font-bold text-white tracking-tight mb-4 block">
-              Evalora
+            <Link href="/" className="flex items-center gap-2 mb-4 group">
+              <Image
+                src="/icon.svg"
+                alt="Evalora Logo"
+                width={28}
+                height={28}
+                className="w-7 h-7 object-contain transition-transform group-hover:scale-110"
+              />
+              <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-700 via-indigo-700 to-violet-700 bg-clip-text text-transparent">
+                Evalora
+              </span>
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              CEFR imtihonlariga tayyorgarlik ko'rish uchun O'zbekistondagi eng ilg'or AI platformasi.
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6">
+              CEFR imtihonlariga tayyorgarlik ko'rish uchun eng ilg'or AI platformasi.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all">
-                <Send className="w-5 h-5" />
+            <div className="flex gap-3">
+              <a
+                href="https://t.me/Evalora_admin"
+                target="_blank"
+                rel="noreferrer"
+                className="w-9 h-9 rounded-full bg-white/70 border border-white flex items-center justify-center text-slate-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+              >
+                <Send className="w-4 h-4" />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-slate-600 hover:text-white transition-all">
-                <Mail className="w-5 h-5" />
+              <a
+                href="mailto:evalora1admin@gmail.com"
+                className="w-9 h-9 rounded-full bg-white/70 border border-white flex items-center justify-center text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+              >
+                <Mail className="w-4 h-4" />
               </a>
             </div>
           </div>
 
+          {/* 2. Platforma */}
           <div>
-            <h4 className="text-white font-bold mb-4">Platforma</h4>
-            <ul className="space-y-3">
-              <li><Link href="#features" className="text-slate-400 hover:text-white text-sm transition-colors">Imkoniyatlar</Link></li>
-              <li><Link href="#how-it-works" className="text-slate-400 hover:text-white text-sm transition-colors">Qanday ishlaydi?</Link></li>
-              <li><Link href="#pricing" className="text-slate-400 hover:text-white text-sm transition-colors">Narxlar va obuna</Link></li>
-              <li><Link href="#faq" className="text-slate-400 hover:text-white text-sm transition-colors">Savol-javob (FAQ)</Link></li>
+            <h4 className="text-slate-900 font-bold text-sm mb-4">Platforma</h4>
+            <ul className="space-y-2.5">
+              <li><Link href="#features" className="text-slate-600 hover:text-blue-600 text-xs sm:text-sm transition-colors">Imkoniyatlar</Link></li>
+              <li><Link href="#how-it-works" className="text-slate-600 hover:text-blue-600 text-xs sm:text-sm transition-colors">Qanday ishlaydi?</Link></li>
+              <li><Link href="#pricing" className="text-slate-600 hover:text-blue-600 text-xs sm:text-sm transition-colors">Narxlar va obuna</Link></li>
+              <li><Link href="#faq" className="text-slate-600 hover:text-blue-600 text-xs sm:text-sm transition-colors">Savol-javob (FAQ)</Link></li>
             </ul>
           </div>
 
+          {/* 3. Huquqiy */}
           <div>
-            <h4 className="text-white font-bold mb-4">Huquqiy</h4>
-            <ul className="space-y-3">
-              <li><Link href="/terms" className="text-slate-400 hover:text-white text-sm transition-colors">Foydalanish shartlari</Link></li>
-              <li><Link href="/privacy" className="text-slate-400 hover:text-white text-sm transition-colors">Maxfiylik siyosati</Link></li>
-              <li><Link href="/oferta" className="text-slate-400 hover:text-white text-sm transition-colors">Ommaviy oferta</Link></li>
+            <h4 className="text-slate-900 font-bold text-sm mb-4">Huquqiy</h4>
+            <ul className="space-y-2.5">
+              <li><Link href="/terms" className="text-slate-600 hover:text-blue-600 text-xs sm:text-sm transition-colors">Foydalanish shartlari</Link></li>
+              <li><Link href="/privacy" className="text-slate-600 hover:text-blue-600 text-xs sm:text-sm transition-colors">Maxfiylik siyosati</Link></li>
+              <li><Link href="/oferta" className="text-slate-600 hover:text-blue-600 text-xs sm:text-sm transition-colors">Ommaviy oferta</Link></li>
             </ul>
           </div>
 
+          {/* 4. Til Tanlash */}
           <div>
-            <h4 className="text-white font-bold mb-4">Tilni tanlash</h4>
+            <h4 className="text-slate-900 font-bold text-sm mb-4">Tilni tanlash</h4>
             <div className="grid grid-cols-2 gap-2">
-              <button className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm py-2 px-3 rounded-lg border border-slate-700 transition-colors text-left flex items-center justify-between">
-                <span>O'zbekcha</span>
-                <span className="text-xs text-blue-400 font-bold">UZ</span>
-              </button>
-              <button className="bg-slate-900 hover:bg-slate-800 text-slate-400 text-sm py-2 px-3 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors text-left flex items-center justify-between">
-                <span>English</span>
-                <span className="text-xs text-slate-600 font-bold">EN</span>
-              </button>
-              <button className="bg-slate-900 hover:bg-slate-800 text-slate-400 text-sm py-2 px-3 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors text-left flex items-center justify-between">
-                <span>Русский</span>
-                <span className="text-xs text-slate-600 font-bold">RU</span>
-              </button>
-              <button className="bg-slate-900 hover:bg-slate-800 text-slate-400 text-sm py-2 px-3 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors text-left flex items-center justify-between">
-                <span>Türkçe</span>
-                <span className="text-xs text-slate-600 font-bold">TR</span>
-              </button>
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={`text-xs py-2 px-3 rounded-xl border transition-all text-left flex items-center justify-between shadow-sm ${currentLocale === lang.code
+                      ? "bg-blue-50 border-blue-300 text-blue-700 font-bold"
+                      : "bg-white/70 border-white/80 hover:bg-white text-slate-700 font-medium"
+                    }`}
+                >
+                  <span>{lang.name}</span>
+                  <span className="text-[10px] text-slate-400 font-bold">{lang.short}</span>
+                </button>
+              ))}
             </div>
           </div>
 
         </div>
 
-        <div className="pt-8 border-t border-slate-800 text-center flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-slate-500 text-sm">
+        <div className="pt-8 border-t border-slate-200/60 text-center flex flex-col sm:flex-row justify-between items-center gap-3">
+          <p className="text-slate-500 text-xs">
             © {new Date().getFullYear()} Evalora. Barcha huquqlar himoyalangan.
           </p>
-          <div className="text-slate-600 text-sm flex items-center gap-1">
+          <div className="text-slate-600 text-xs flex items-center gap-1">
             Made with <span className="text-red-500">❤️</span> in Uzbekistan
           </div>
         </div>

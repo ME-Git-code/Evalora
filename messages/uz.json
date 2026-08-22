@@ -3,5 +3,18 @@
     "title": "Evalora - CEFR imtihonlariga AI yordamida tayyorlaning",
     "login": "Kirish",
     "getStarted": "Boshlash"
+  },
+  "FAQ": {
+    "badge": "FAQ",
+    "title": "Ko'p beriladigan savollar",
+    "subtitle": "Platforma haqida o'zingizni qiziqtirgan savollarga javob toping.",
+    "q1": "To'lov qanday amalga oshiriladi?",
+    "a1": "To'lovlarni barcha mahalliy bank kartalari (Uzcard, Humo) orqali amalga oshirishingiz mumkin.",
+    "q2": "AI baholash qanchalik aniq va xolis?",
+    "a2": "Tizimimiz rasmiy CEFR baholash mezonlari bo'yicha tahlil qiladi. Baholash xolisligi 95% dan yuqori.",
+    "q3": "Free tarifda qanday sinov imkoniyatlari mavjud?",
+    "a3": "Bepul tarifda bitta to'liq Mock testni ishlab ko'rishingiz uchun bepul tekshiruv taqdim etiladi.",
+    "q4": "Mock testlar va savollar qanchalik tez-tez yangilanadi?",
+    "a4": "Test bazamiz har haftada yangi savollar bilan boyitib boriladi."
   }
 }

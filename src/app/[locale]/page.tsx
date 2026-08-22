@@ -10,10 +10,10 @@ import { ScrollToTop } from "@/components/landing/ScrollToTop";
 
 export default function Home() {
   return (
-    <div className="min-h-screen font-sans bg-slate-50 text-slate-900 scroll-smooth">
+    <div className="min-h-screen font-sans text-slate-900 bg-transparent scroll-smooth">
       <Header />
-      
-      <main>
+
+      <main className="flex flex-col gap-0">
         <Hero />
         <HowItWorks />
         <Features />
