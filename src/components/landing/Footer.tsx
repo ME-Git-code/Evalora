@@ -91,8 +91,8 @@ export function Footer() {
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code)}
                   className={`text-xs py-2 px-3 rounded-xl border transition-all text-left flex items-center justify-between shadow-sm ${currentLocale === lang.code
-                      ? "bg-blue-50 border-blue-300 text-blue-700 font-bold"
-                      : "bg-white/70 border-white/80 hover:bg-white text-slate-700 font-medium"
+                    ? "bg-blue-50 border-blue-300 text-blue-700 font-bold"
+                    : "bg-white/70 border-white/80 hover:bg-white text-slate-700 font-medium"
                     }`}
                 >
                   <span>{lang.name}</span>
@@ -104,12 +104,24 @@ export function Footer() {
 
         </div>
 
-        <div className="pt-8 border-t border-slate-200/60 text-center flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="text-slate-500 text-xs">
+        <div className="pt-8 border-t border-slate-200/60 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+          {/* Chap taraf: Copyright */}
+          <p>
             © {new Date().getFullYear()} Evalora. Barcha huquqlar himoyalangan.
           </p>
-          <div className="text-slate-600 text-xs flex items-center gap-1">
-            Made with <span className="text-red-500">❤️</span> in Uzbekistan
+
+          {/* O'rta: Mualliflar */}
+          <p className="flex items-center gap-1.5 text-slate-600">
+            <span>G‘oya muallifi:</span>
+            <strong className="font-semibold text-slate-800">Mohina Adizova</strong>
+            <span className="text-slate-300">•</span>
+            <span>Dasturchi:</span>
+            <strong className="font-semibold text-slate-800">Ozodbek Raximjonov</strong>
+          </p>
+
+          {/* O'ng taraf: Made in UZ */}
+          <div className="flex items-center gap-1 text-slate-600">
+            Made with <span className="text-red-500 animate-pulse">❤️</span> in Uzbekistan
           </div>
         </div>
       </div>
